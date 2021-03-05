@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Download CAR model
-mkdir -p ./models/tlt_pretrained_models/trafficcamnet
-cd ./models/tlt_pretrained_models/trafficcamnet
-wget https://api.ngc.nvidia.com/v2/models/nvidia/tlt_trafficcamnet/versions/pruned_v1.0/files/trafficnet_int8.txt
-wget https://api.ngc.nvidia.com/v2/models/nvidia/tlt_trafficcamnet/versions/pruned_v1.0/files/resnet18_trafficcamnet_pruned.etlt
-cd -
-
 # Download LPD model
 mkdir -p ./models/LP/LPD
 cd ./models/LP/LPD
