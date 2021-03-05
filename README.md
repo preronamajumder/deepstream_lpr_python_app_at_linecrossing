@@ -58,7 +58,7 @@ Download x86 or Jetson tlt-converter which is compatible to your platform from t
     wget <url>
     unzip <filename>
 ```
-Convert LPR Model:
+Convert LPR Model:  
 DS5.0.1 gst-nvinfer cannot generate TRT engine for LPR model, so generate it with tlt-converter
 
 ```
@@ -69,9 +69,9 @@ DS5.0.1 gst-nvinfer cannot generate TRT engine for LPR model, so generate it wit
     cd ..
 ```
 
-if you get the following:
-[WARNING] Half2 support requested on hardware without native FP16 support, performance will be negatively affected.
- then use fp32 instead of fp16:
+if you get the following:  
+[WARNING] Half2 support requested on hardware without native FP16 support, performance will be negatively affected.  
+Then use fp32 instead of fp16:
 
 ```
     ./tlt-converter -k nvidia_tlt -p image_input,1x3x48x96,4x3x48x96,16x3x48x96 \
@@ -88,14 +88,14 @@ if you get the following:
 ```
 ## NVAnalytics Module
 
-more details on the nvanalytics module can be learnt from https://github.com/NVIDIA-AI-IOT/deepstream_python_apps/app-deepstream-nvanalytics
-change the following parameters in config_nvdsanalytics.txt:
+More details on the nvanalytics module can be learnt from https://github.com/NVIDIA-AI-IOT/deepstream_python_apps/app-deepstream-nvanalytics  
+Change the following parameters in config_nvdsanalytics.txt:  
     [i] roi-RF: provide your own ROI where you want your LP to be detected
     [ii] line-crossing-Entry or line-crossing-Exit: provide your own virtual line and direction as well as entry or exit.
 
 ## Run app
 
-Start to run the application
+Run the application:
 ```
     python3 deepstream_lpr_app.py file://<file location>
     python3 deepstream_lpr_app.py <uri1> <uri2> ..... <urin>
