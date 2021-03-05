@@ -35,8 +35,8 @@ osd-mode=2
 #Set OSD font size that has to be displayed
 display-font-size=12
 
-## All stream configuration
-[roi-filtering-stream-all]
+## Per stream configuration
+[roi-filtering-stream-0]
 #enable or disable following feature
 enable=1
 #ROI to filter select objects, and remove from meta data
@@ -48,15 +48,16 @@ class-id=0
 ## Per stream configuration
 [roi-filtering-stream-1]
 #enable or disable following feature
-enable=0
+enable=1
 #ROI to filter select objects, and remove from meta data
 roi-RF=0;0;0;300;200;300;200;0
 #remove objects in the ROI
 inverse-roi=0
 class-id=0
 
-##All stream configuration
-[overcrowding-stream-all]
+
+##Per stream configuration
+[overcrowding-stream-0]
 enable=0
 roi-OC=0;0;0;480;200;480;200;0
 #no of objects that will trigger OC
@@ -71,8 +72,8 @@ roi-OC=0;0;0;480;200;480;200;0
 object-threshold=5
 class-id=-1
 
-##All stream configuration
-[line-crossing-stream-all]
+##Per stream configuration
+[line-crossing-stream-0]
 enable=1
 #Label;direction;lc
 #line-crossing-Entry=1072;911;1143;1058;944;1020;1297;1020;
@@ -89,10 +90,10 @@ mode=loose
 
 ##Per stream configuration
 [line-crossing-stream-1]
-enable=0
+enable=1
 #Label;direction;lc
 #line-crossing-Entry=1072;911;1143;1058;944;1020;1297;1020;
-line-crossing-Exit=789;672;1084;900;851;773;1203;732
+line-crossing-Exit=200;150;0;150;100;0;100;300
 class-id=0
 #extended when 0- only counts crossing on the configured Line
 #              1- assumes extended Line crossing counts all the crossing
@@ -103,8 +104,8 @@ extended=0
 #strict  : Strict direction adherence expected compared to mode=balanced
 mode=loose
 
-##All stream configuration
-[direction-detection-stream-all]
+##Per stream configuration
+[direction-detection-stream-0]
 enable=0
 #Label;direction;
 direction-South=284;840;360;662;

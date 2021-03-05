@@ -66,7 +66,7 @@ if not os.path.exists(path1):
 
 # tiler_sink_pad_buffer_probe  will extract metadata received on OSD sink pad
 # and update params for drawing rectangle, object information etc.
-def tiler_src_pad_buffer_probe(pad,info,u_data):
+def tiler_src_pad_buffer_probe(pad,info,u_data,number_sources):
 
     frame_number=0
     num_rects=0
@@ -75,7 +75,7 @@ def tiler_src_pad_buffer_probe(pad,info,u_data):
         print("Unable to get GstBuffer ")
         return
 
-    lp_dict = {}
+    lp_dict = {i: {} for i in range(number_sources)}
     # Retrieve batch metadata from the gst_buffer
     # Note that pyds.gst_buffer_get_nvds_batch_meta() expects the
     # C address of gst_buffer as input, which is obtained with hash(gst_buffer)
@@ -118,8 +118,8 @@ def tiler_src_pad_buffer_probe(pad,info,u_data):
                     user_meta = pyds.NvDsUserMeta.cast(l_user_meta.data)
                     if user_meta.base_meta.meta_type == pyds.nvds_get_user_meta_type("NVIDIA.DSANALYTICSOBJ.USER_META"):             
                         user_meta_data = pyds.NvDsAnalyticsObjInfo.cast(user_meta.user_meta_data)
-                        print("Object {0} line crossing status: {1}".format(obj_meta.object_id, user_meta_data.lcStatus))
-                        print("Object {0} roi status: {1}".format(obj_meta.object_id, user_meta_data.roiStatus))
+                        # print("Object {0} line crossing status: {1}".format(obj_meta.object_id, user_meta_data.lcStatus))
+                        # print("Object {0} roi status: {1}".format(obj_meta.object_id, user_meta_data.roiStatus))
                         # if user_meta_data.dirStatus: print("Object {0} moving in direction: {1}".format(obj_meta.object_id, user_meta_data.dirStatus))                    
                         # if user_meta_data.lcStatus: print("Object {0} line crossing status: {1}".format(obj_meta.object_id, user_meta_data.lcStatus))
                         # if user_meta_data.ocStatus: print("Object {0} overcrowding status: {1}".format(obj_meta.object_id, user_meta_data.ocStatus))
@@ -149,8 +149,9 @@ def tiler_src_pad_buffer_probe(pad,info,u_data):
                                     y = obj_meta.rect_params.top
                                     w = obj_meta.rect_params.width
                                     h = obj_meta.rect_params.height
-                                    lp_dict[long_to_int(obj_meta.object_id)] = [label_info.result_label, obj_meta.confidence, int(x), int(y), int(x+w), int(y+h)]
-
+                                    print(lp_dict)
+                                    lp_dict[frame_meta.pad_index][long_to_int(obj_meta.object_id)] = [label_info.result_label, obj_meta.confidence, int(x), int(y), int(x+w), int(y+h)]
+                                    print(lp_dict)
                                     try:
                                         l_label=l_label.next
                                     except StopIteration:
@@ -174,24 +175,25 @@ def tiler_src_pad_buffer_probe(pad,info,u_data):
                 break
 
         #write image when object detected in "positive" folder
-        for tracking_id, data in lp_dict.items():
-            if tracking_id not in list(id_list.queue):
-                if id_list.full():
-                    id_list.get()
-                id_list.put(tracking_id)
-                try:
-                    frame = get_frame(gst_buffer, frame_meta.batch_id)
-                    name= "img_"+str(tracking_id)+"_"+datetime.datetime.now().strftime("%Y%m%d_%H%M%S")+".jpg"
-                    if data[1] > 0.3:
-                        cv2.rectangle(frame, (data[2], data[3]), (data[4], data[5]), (255, 0, 255), 1)
-                        cv2.rectangle(frame, (data[2], data[3]-20), (data[4], data[3]), (255, 0, 255), -1)
-                        cv2.putText(frame, data[0], (data[2], data[3]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
-                        cv2.imwrite(os.path.join(path1, name), frame)
-                        print(data)
-                except cv2.error as e:
-                    print(e)
+        for source_id, data in lp_dict.items():
+            for tracking_id, bbox_info in data.items():
+                if tracking_id not in list(id_list.queue):
+                    if id_list.full():
+                        id_list.get()
+                    id_list.put(tracking_id)
+                    try:
+                        frame = get_frame(gst_buffer, frame_meta.batch_id)
+                        name= "img_"+str(tracking_id)+"_"+datetime.datetime.now().strftime("%Y%m%d_%H%M%S")+".jpg"
+                        if bbox_info[1] > 0.3:
+                            cv2.rectangle(frame, (bbox_info[2], bbox_info[3]), (bbox_info[4], bbox_info[5]), (255, 0, 255), 1)
+                            cv2.rectangle(frame, (bbox_info[2], bbox_info[3]-20), (bbox_info[4], bbox_info[3]), (255, 0, 255), -1)
+                            cv2.putText(frame, bbox_info[0], (bbox_info[2], bbox_info[3]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+                            cv2.imwrite(os.path.join(os.path.join(path1,"stream_"+str(source_id)), name), frame)
+                            print(bbox_info)
+                    except cv2.error as e:
+                        print(e)
 
-                print(lp_dict)
+        # print(lp_dict)
 
         # Get meta data from NvDsAnalyticsFrameMeta
         l_user = frame_meta.frame_user_meta_list
@@ -201,7 +203,7 @@ def tiler_src_pad_buffer_probe(pad,info,u_data):
                 if user_meta.base_meta.meta_type == pyds.nvds_get_user_meta_type("NVIDIA.DSANALYTICSFRAME.USER_META"):
                     user_meta_data = pyds.NvDsAnalyticsFrameMeta.cast(user_meta.user_meta_data)
                     # if user_meta_data.objInROIcnt: print("Objs in ROI: {0}".format(user_meta_data.objInROIcnt))                    
-                    if user_meta_data.objLCCumCnt: print("Linecrossing Cumulative: {0}".format(user_meta_data.objLCCumCnt))
+                    # if user_meta_data.objLCCumCnt: print("Linecrossing Cumulative: {0}".format(user_meta_data.objLCCumCnt))
                     # if user_meta_data.objLCCurrCnt: print("Linecrossing Current Frame: {0}".format(user_meta_data.objLCCurrCnt))
                     # if user_meta_data.ocStatus: print("Overcrowding status: {0}".format(user_meta_data.ocStatus))
             except StopIteration:
@@ -329,6 +331,8 @@ def main(args):
 
     pipeline.add(streammux)
     for i in range(number_sources):
+        if not os.path.exists(os.path.join(path1,"stream_"+str(i))):
+            os.mkdir(os.path.join(path1,"stream_"+str(i)))
         print("Creating source_bin ",i," \n ")
         uri_name=args[i+1]
         if uri_name.find("rtsp://") == 0 :
@@ -498,20 +502,6 @@ def main(args):
     pipeline.add(sink)
 
     print("Linking elements in the Pipeline \n")
-    # streammux.link(pgie)
-    # pgie.link(tracker)
-    # tracker.link(nvanalytics)
-    # nvanalytics.link(sgie)
-    # sgie.link(nvvidconv1)
-    # nvvidconv1.link(filter1)
-    # filter1.link(tiler)
-    # tiler.link(nvvidconv)
-    # nvvidconv.link(nvosd)
-    # if is_aarch64():
-    #     nvosd.link(transform)
-    #     transform.link(sink)
-    # else:
-    #     nvosd.link(sink)
 
     streammux.link(pgie)
     pgie.link(queue1)
@@ -548,7 +538,7 @@ def main(args):
     if not tiler_src_pad:
         sys.stderr.write(" Unable to get sink pad \n")
     else:
-        tiler_src_pad.add_probe(Gst.PadProbeType.BUFFER, tiler_src_pad_buffer_probe, 0)
+        tiler_src_pad.add_probe(Gst.PadProbeType.BUFFER, tiler_src_pad_buffer_probe, 0, number_sources)
 
     # List the sources
     print("Now playing...")
