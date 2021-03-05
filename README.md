@@ -90,7 +90,7 @@ Then use fp32 instead of fp16:
 
 More details on the nvanalytics module can be learnt from https://github.com/NVIDIA-AI-IOT/deepstream_python_apps/app-deepstream-nvanalytics  
 Change the following parameters in config_nvdsanalytics.txt:  
-    [i] roi-RF: provide your own ROI where you want your LP to be detected
+    [i] roi-RF: provide your own ROI where you want your LP to be detected  
     [ii] line-crossing-Entry or line-crossing-Exit: provide your own virtual line and direction as well as entry or exit.
 
 ## Run app
@@ -98,6 +98,6 @@ Change the following parameters in config_nvdsanalytics.txt:
 Run the application:
 ```
     python3 deepstream_lpr_app.py file://<file location>
-    python3 deepstream_lpr_app.py <uri1> <uri2> ..... <urin>
+    python3 deepstream_lpr_app.py <uri1> <uri2> ..... <uriN>
 ```
 
