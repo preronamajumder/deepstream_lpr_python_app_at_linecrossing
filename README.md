@@ -56,7 +56,7 @@ Download x86 or Jetson tlt-converter which is compatible to your platform from t
 
 ```
     wget <url>
-    unzip <filename>.zip
+    unzip <filename>
 ```
 Convert LPR Model:
 DS5.0.1 gst-nvinfer cannot generate TRT engine for LPR model, so generate it with tlt-converter
