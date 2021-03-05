@@ -63,10 +63,12 @@ id_list = Queue(maxsize=20)
 path1 = "data"
 if not os.path.exists(path1):
     os.mkdir(path1)
-
+number_sources = 0
 # tiler_sink_pad_buffer_probe  will extract metadata received on OSD sink pad
 # and update params for drawing rectangle, object information etc.
-def tiler_src_pad_buffer_probe(pad,info,u_data,number_sources):
+def tiler_src_pad_buffer_probe(pad,info,u_data):
+
+    global number_sources
 
     frame_number=0
     num_rects=0
@@ -118,7 +120,7 @@ def tiler_src_pad_buffer_probe(pad,info,u_data,number_sources):
                     user_meta = pyds.NvDsUserMeta.cast(l_user_meta.data)
                     if user_meta.base_meta.meta_type == pyds.nvds_get_user_meta_type("NVIDIA.DSANALYTICSOBJ.USER_META"):             
                         user_meta_data = pyds.NvDsAnalyticsObjInfo.cast(user_meta.user_meta_data)
-                        # print("Object {0} line crossing status: {1}".format(obj_meta.object_id, user_meta_data.lcStatus))
+                        print("Object {0} line crossing status: {1}".format(obj_meta.object_id, user_meta_data.lcStatus))
                         # print("Object {0} roi status: {1}".format(obj_meta.object_id, user_meta_data.roiStatus))
                         # if user_meta_data.dirStatus: print("Object {0} moving in direction: {1}".format(obj_meta.object_id, user_meta_data.dirStatus))                    
                         # if user_meta_data.lcStatus: print("Object {0} line crossing status: {1}".format(obj_meta.object_id, user_meta_data.lcStatus))
@@ -149,9 +151,7 @@ def tiler_src_pad_buffer_probe(pad,info,u_data,number_sources):
                                     y = obj_meta.rect_params.top
                                     w = obj_meta.rect_params.width
                                     h = obj_meta.rect_params.height
-                                    print(lp_dict)
                                     lp_dict[frame_meta.pad_index][long_to_int(obj_meta.object_id)] = [label_info.result_label, obj_meta.confidence, int(x), int(y), int(x+w), int(y+h)]
-                                    print(lp_dict)
                                     try:
                                         l_label=l_label.next
                                     except StopIteration:
@@ -193,7 +193,7 @@ def tiler_src_pad_buffer_probe(pad,info,u_data,number_sources):
                     except cv2.error as e:
                         print(e)
 
-        # print(lp_dict)
+        print(lp_dict)
 
         # Get meta data from NvDsAnalyticsFrameMeta
         l_user = frame_meta.frame_user_meta_list
@@ -203,7 +203,7 @@ def tiler_src_pad_buffer_probe(pad,info,u_data,number_sources):
                 if user_meta.base_meta.meta_type == pyds.nvds_get_user_meta_type("NVIDIA.DSANALYTICSFRAME.USER_META"):
                     user_meta_data = pyds.NvDsAnalyticsFrameMeta.cast(user_meta.user_meta_data)
                     # if user_meta_data.objInROIcnt: print("Objs in ROI: {0}".format(user_meta_data.objInROIcnt))                    
-                    # if user_meta_data.objLCCumCnt: print("Linecrossing Cumulative: {0}".format(user_meta_data.objLCCumCnt))
+                    if user_meta_data.objLCCumCnt: print("Linecrossing Cumulative: {0}".format(user_meta_data.objLCCumCnt))
                     # if user_meta_data.objLCCurrCnt: print("Linecrossing Current Frame: {0}".format(user_meta_data.objLCCurrCnt))
                     # if user_meta_data.ocStatus: print("Overcrowding status: {0}".format(user_meta_data.ocStatus))
             except StopIteration:
@@ -300,6 +300,8 @@ def create_source_bin(index,uri):
     return nbin
 
 def main(args):
+
+    global number_sources
 
     # Check input arguments
     if len(args) < 2:
@@ -538,7 +540,7 @@ def main(args):
     if not tiler_src_pad:
         sys.stderr.write(" Unable to get sink pad \n")
     else:
-        tiler_src_pad.add_probe(Gst.PadProbeType.BUFFER, tiler_src_pad_buffer_probe, 0, number_sources)
+        tiler_src_pad.add_probe(Gst.PadProbeType.BUFFER, tiler_src_pad_buffer_probe, 0)
 
     # List the sources
     print("Now playing...")
