@@ -79,14 +79,14 @@ if you get the following:
     cd ..
 ```
 
-##Build Parser
+## Build Parser
 
 ```
     cd nvinfer_custom_lpr_parser
     make
     cd ..
 ```
-##NVAnalytics Module
+## NVAnalytics Module
 
 more details on the nvanalytics module can be learnt from https://github.com/NVIDIA-AI-IOT/deepstream_python_apps/app-deepstream-nvanalytics
 change the following parameters in config_nvdsanalytics.txt:
