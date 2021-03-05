@@ -2,10 +2,10 @@
 
  - [Description](#description)
  - [Prerequisition](#prerequisition)
- - [Download](#Prepare Models and TensorRT engine)
- - [Build Parser](#Build custom parser)
- - [NVAnalytics Module](#NVAnalytics Module)
- - [Run](#build-and-run)
+ - [Download](#Prepare-Models-and-TensorRT-engine)
+ - [Build Parser](#Build-custom-parser)
+ - [NVAnalytics Module](#NVAnalytics-Module)
+ - [Run](#Run-app)
 
 ---
 
@@ -93,7 +93,7 @@ change the following parameters in config_nvdsanalytics.txt:
     [i] roi-RF: provide your own ROI where you want your LP to be detected
     [ii] line-crossing-Entry or line-crossing-Exit: provide your own virtual line and direction as well as entry or exit.
 
-## Run
+## Run app
 
 Start to run the application
 ```
